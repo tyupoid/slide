@@ -20,7 +20,7 @@ export default class Slide {
     if(event.type === 'mousedown'){
       event.preventDefault();
       this.dist.startX = event.clientX;
-      moveType = 'mousedown';
+      moveType = 'mousemove';
     }else{
       this.dist.startX = event.changedTouches[0].clientX;
       moveType = 'touchmove';
@@ -29,8 +29,7 @@ export default class Slide {
   }
 
   onMove(event) {
-    const pointerPosition = (event.type === 'mousemove') ? event.clientX : 
-    event.changedTouches[0].clientX;
+    const pointerPosition = (event.type === 'mousemove') ? event.clientX : event.changedTouches[0].clientX;
     const finalPosition = this.updatePosition(pointerPosition);
     this.moveSlide(finalPosition);
   }
@@ -55,9 +54,42 @@ export default class Slide {
     this.onEnd = this.onEnd.bind(this);
   }
 
+  slidePosition(slide){
+    const margin = (this.wrapper.offsetWidth -  slide.offsetWidth) / 2;
+    return -(slide.offsetLeft - margin);
+  }
+
+  //slide-configs
+  slidesConfig(){
+    this.slideArray = [...this.slide.children].map((element) =>{
+      const position = this.slidePosition(element);
+      return {element, position}
+    });
+  }
+  
+
+  slideIndexnav(index){
+    const last = this.slideArray.length - 1;
+    console.log(last); 
+    this.index = {
+      prev:  index ? index - 1 : undefined,
+      active: index,
+      next: index === last ? undefined : index + 1,
+    }
+  }
+
+  changeSlide(index){
+    const activeSlide = this.slideArray[index];
+    this.moveSlide(activeSlide.position);
+    this.slideIndexnav(index);
+    this.dist.finalPosition = activeSlide.position;
+    console.log(this.index);
+  } 
+
   init() {
     this.bindEvents();
     this.addSlideEvents();
+    this.slidesConfig();
     return this;
   }
 }
